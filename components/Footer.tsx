@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
+import { sendWelcomeEmail } from '@/lib/email';
 
 const Newsletter = () => {
     const [email, setEmail] = useState('');
@@ -17,27 +18,19 @@ const Newsletter = () => {
         if (!email || !email.includes('@')) return;
 
         setIsLoading(true);
+
         try {
-            const response = await fetch('/api/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
+            await sendWelcomeEmail(email); // 🔥 using your email.ts
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.warn('Subscription API failed, but showing success for UX:', errorData);
-            }
-
-            setTimeout(() => {
-                setIsLoading(false);
-                setIsSubscribed(true);
-                setEmail('');
-            }, 800);
-        } catch (error) {
-            console.error('Subscription error:', error);
             setIsLoading(false);
             setIsSubscribed(true);
+            setEmail('');
+
+        } catch (error) {
+            console.error('Email error:', error);
+
+            setIsLoading(false);
+            setIsSubscribed(true); // keep UX smooth
         }
     };
 
